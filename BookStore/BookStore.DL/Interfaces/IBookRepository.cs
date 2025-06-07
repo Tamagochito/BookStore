@@ -4,11 +4,12 @@ namespace BookStore.DL.Interfaces
 {
     public interface IBookRepository
     {
-        List<Book> GetAllBooks();
-        void AddBook(Book book);
-        Book? GetBookById(string id);
+        Task<List<Book>> GetAll();
 
-        //void UpdateBook(Book book);
-        //void DeleteBook(int id);
+        Task<Book?> GetById(string id);
+
+        Task Add(Book book);
+
+        Task Update(Book book);
     }
 }
