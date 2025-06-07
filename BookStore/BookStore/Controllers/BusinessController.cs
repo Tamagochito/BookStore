@@ -8,38 +8,26 @@ namespace BookStore.Controllers
     [Route("[controller]")]
     public class BusinessController : ControllerBase
     {
-        private readonly IBookBlService _bookService;
-        private readonly IWriterService _writerService;
+        private readonly IBusinessService _bookService;
 
-        public BusinessController(IBookBlService bookService, IWriterService writerService)
+        public BusinessController(IBusinessService bookService)
+
         {
             _bookService = bookService;
-            _writerService = writerService;
         }
 
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("GetAllBookWithDetails")]
-        public IActionResult GetAllBookWithDetails()
+        [HttpGet("GetAllDetailedBooks")]
+        public IActionResult GetAllDetailedBooks()
         {
-            var result = _bookService.GetDetailedBooks();
+            var result =
+                _bookService.GetAllBooks();
 
-            if (result == null || result.Count == 0)
+            if (result != null && result.Count > 0)
             {
-                return NotFound("No books found");
+                return Ok(result);
             }
 
-            return Ok(result);
-        }
-
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpPost("AddWriter")]
-        public IActionResult AddWriter([FromBody] Writer writer)
-        {
-            _writerService.Add(writer);
-
-            return Ok();
+            return NotFound();
         }
 
     }
