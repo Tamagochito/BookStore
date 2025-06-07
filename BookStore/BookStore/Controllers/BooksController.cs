@@ -10,44 +10,39 @@ namespace BookStore.Controllers
     [Route("[controller]")]
     public class BooksController : ControllerBase
     {
-        private readonly IBookService _bookService;
+        private readonly IBooksService _bookService;
         private readonly IMapper _mapper;
-        private readonly ILogger<BooksController> _logger;
 
         public BooksController(
-            IBookService bookService,
-            IMapper mapper, 
-            ILogger<BooksController> logger)
+            IBooksService bookService,
+            IMapper mapper)
         {
             _bookService = bookService;
             _mapper = mapper;
-            _logger = logger;
         }
 
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("GetAll")]
-        public IActionResult Get()
+        public IActionResult GetAll()
         {
-            var result = _bookService.GetAllBooks();
+            var result = _bookService.GetAll();
 
-            if (result == null || result.Count == 0)
+            if (result != null && result.Count > 0)
             {
-                return NotFound("No books found");
+                return Ok(result);
             }
 
-            return Ok(result);
+            return NotFound();
         }
 
-        [HttpGet("GetById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpGet("GetById")]
         public IActionResult GetById(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
-                return BadRequest("Id can't be null or empty");
+                return BadRequest($"Wrong ID:{id}");
             }
 
             var result = _bookService.GetById(id);
@@ -61,40 +56,24 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("Add")]
-        public IActionResult Add(AddBookRequest book)
+        public async Task<IActionResult> Add([FromBody]AddBookRequest book)
         {
-            try
+            if (book == null)
             {
-                var bookDto = _mapper.Map<Book>(book);
-
-                if (bookDto == null)
-                {
-                    return BadRequest("Can't convert book to book DTO");
-                }
-
-                _bookService.AddBook(bookDto);
-
-                return Ok();
+                return BadRequest("Book is null");
             }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex, $"Error adding book with");
-                return BadRequest(ex.Message);
-            }
+
+            var bookDto = _mapper.Map<Book>(book);
+
+            await _bookService.Add(bookDto);
+
+            return Ok();
         }
 
         [HttpDelete("Delete")]
-        public IActionResult Delete(int id)
+        public void Delete(int id)
         {
-            if (id <= 0)
-            {
-                return BadRequest("Id must be greater than 0");
-            }
-
-            //_bookService.Delete(id);
-
-
-            return Ok();
+            //return _bookService.GetById(id);
         }
     }
 }
