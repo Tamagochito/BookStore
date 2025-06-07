@@ -1,9 +1,9 @@
 ﻿using BookStore.Models.Views;
 
-namespace  BookStore.BL.Interfaces
+namespace BookStore.BL.Interfaces
 {
     public interface IBookBlService
-    {
-        List< BookView> GetDetailedBooks();
+     {
+        Task<List<BookFullDetailsResponse>> GetAllBooks();
     }
 }
