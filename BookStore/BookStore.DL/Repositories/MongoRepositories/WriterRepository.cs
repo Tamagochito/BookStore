@@ -7,67 +7,70 @@ using BookStore.Models.DTO;
 
 namespace BookStore.DL.Repositories.MongoRepositories
 {
-    public class WriterRepository : IWriterRepository
+    internal class WriterRepository : IWriterRepository
     {
-        private readonly IMongoCollection<Writer> _writers;
+        private readonly IMongoCollection<Writer> _writersCollection;
         private readonly ILogger<WriterRepository> _logger;
 
-        public ActorRepository(
+        public WriterRepository(
             IOptionsMonitor<MongoDbConfiguration> mongoConfig,
             ILogger<WriterRepository> logger)
         {
             _logger = logger;
-            var client = new MongoClient(
-                mongoConfig.CurrentValue.ConnectionString);
 
+            var client =
+                new MongoClient(mongoConfig.CurrentValue.ConnectionString);
             var database = client.GetDatabase(
                 mongoConfig.CurrentValue.DatabaseName);
-
-            _writers = database.GetCollection<Writer>(
-                $"{nameof(Writer)}s");
+            _writersCollection = database.GetCollection<writer>("WritersDb");
         }
 
-        public void AddWriter(Writer writer)
+        public async Task<List<Writer>> GetAll()
         {
-            writer.Id = System.Guid.NewGuid().ToString();
-            _writers.InsertOne(writer);
+            var result = await _writersCollection.FindAsync(m => true);
+
+            return await result.ToListAsync();
         }
 
-        public void AddBook(Writer book)
+        public async Task<Writr?> GetById(string id)
         {
-            if (book == null)
+            var result = await _writersCollection
+                .FindAsync(m => m.Id == id);
+
+             return result.FirstOrDefault();
+        }
+
+        public async Task Add(Writer? writer)
+        {
+            if (writer == null)
             {
                 _logger.LogError("Book is null");
+
                 return;
             }
 
             try
             {
-                movie.Id = Guid.NewGuid().ToString();
-
-                _actors.InsertOne(book);
+                await _writersCollection.InsertOneAsync(writer);
             }
             catch (Exception e)
             {
-               _logger.LogError(e,
-                   $"Error adding book {e.Message}-{e.StackTrace}");
+                _logger.LogError(e, "Failed to add book");
             }
-           
         }
 
-
-        public IEnumerable<Writer> GetActorsByIds(IEnumerable<string> writersIds)
+        public void Update(Writer book)
         {
-            var result = _writers.Find(writer => writersIds.Contains(writer.Id)).ToList();
-            return result;
+            _writersCollection.ReplaceOne(m => m.Id == book.Id, book);
         }
 
-        public Writer? GetById(string id)
+        public async Task<List<Writer>> GetAll(List<string> ids)
         {
-            if (string.IsNullOrEmpty(id)) return null;
+            if (ids == null || !ids.Any()) return [];
 
-            return _writers.Find(b => b.Id == id)
-                .FirstOrDefault();
+            var result = await _writersCollection.FindAsync(m => ids.Contains(m.Id));
+
+            return await result.ToListAsync();
         }
     }
 }
