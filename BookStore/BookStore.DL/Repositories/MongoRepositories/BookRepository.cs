@@ -7,58 +7,43 @@ using BookStore.Models.DTO;
 
 namespace BookStore.DL.Repositories.MongoRepositories
 {
-    public class BookRepository : IBookRepository
+    internal class BookStaticDataRepository : IBookRepository
     {
-        private readonly IMongoCollection<Book> _books;
-        private readonly ILogger<BookRepository> _logger;
+        //public List<Book> GetAll()
+        //{
+        //    return StaticDb.Books;
+        //}
 
-        public BookRepository(
-            IOptionsMonitor<MongoDbConfiguration> mongoConfig,
-            ILogger<BookRepository> logger)
+        //public Book? GetById(string id)
+        //{
+        //    if (string.IsNullOrEmpty(id)) return null;
+
+        //    return StaticDb.Books
+        //        .FirstOrDefault(x => x.Id == id);
+        //}
+        public Task Add(Book book)
         {
-            _logger = logger;
-            var client = new MongoClient(
-                mongoConfig.CurrentValue.ConnectionString);
-
-            var database = client.GetDatabase(
-                mongoConfig.CurrentValue.DatabaseName);
-
-            _books = database.GetCollection<Book>(
-                $"{nameof(Book)}s");
+            throw new NotImplementedException();
         }
 
-        public List<Book> GetAllBooks()
+        public Task<List<Book>> GetAll()
         {
-           return _books.Find(book => true).ToList();
+            return StaticDb.Books;
         }
 
-        public void AddBook(Book book)
+        public Task<Book?> GetById(string id)
         {
-            if (book == null)
-            {
-                _logger.LogError("Book is null");
-                return;
-            }
-
-            try
-            {
-                book.Id = Guid.NewGuid().ToString();
-
-                _books.InsertOne(book);
-            }
-            catch (Exception e)
-            {
-               _logger.LogError(e,
-                   $"Error adding book {e.Message}-{e.StackTrace}");
-            }
-           
+            throw new NotImplementedException();
         }
 
-        public Book? GetBookById(string id)
+        public Task Update(Book book)
         {
-            if(string.IsNullOrEmpty(id)) return null;
+            throw new NotImplementedException();
+        }
+    }
 
-            return _books.Find(b => b.Id == id)
+
+}
                 .FirstOrDefault();
         }
     }
